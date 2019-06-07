@@ -1,3 +1,5 @@
+.pio
+**/pio/lib/**
 test.ipynb
 test.py
 *.pyc
