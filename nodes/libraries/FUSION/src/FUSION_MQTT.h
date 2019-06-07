@@ -24,6 +24,7 @@ class FusionMQTT
         void send(uint8_t* data, unsigned int length, char* topic_data);
         void send(char* data, unsigned int length, char* topic_data);
         void send(const char* data, char* topic_data);
+        void send(const char* data, char* topic_data, bool retain);
         void update();
 
         void callback(char* topic, uint8_t* payload, unsigned int length);

@@ -34,17 +34,21 @@ void FusionMQTT::init()
     // the weird way C++ handles pointers to member functions
     mqttClient.setCallback(std::bind(&FusionMQTT::callback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
+    // member variable maybe?
+    char topic[TOPIC_MAXLENGTH];
+    snprintf(topic, TOPIC_MAXLENGTH, "%s/%s/%s/#", topic_network, topic_location, topic_name);
+
+    char will[1000];
+    snprintf(will, 1000, "%s disconnected", topic_name);
+
     while (!mqttClient.connected())
     {
-        if (!mqttClient.connect(topic_name))
+        if (!mqttClient.connect(topic_name, topic, 0, 0, will))
         {
             delay(100);
         }
     }
 
-    // member variable maybe?
-    char topic[TOPIC_MAXLENGTH];
-    snprintf(topic, TOPIC_MAXLENGTH, "%s/%s/%s/#", topic_network, topic_location, topic_name);
     // listen to all messages addressed with topic
     mqttClient.subscribe(topic);
     Serial.println("initialized");
@@ -84,6 +88,14 @@ void FusionMQTT::send(const char* data, char* topic_data)
     char topic[TOPIC_MAXLENGTH];
     snprintf(topic, TOPIC_MAXLENGTH, "%s/%s/%s/%s", topic_network, topic_location, topic_name, topic_data);
     mqttClient.publish(topic, data, false);
+    mqttClient.loop();
+}
+
+void FusionMQTT::send(const char* data, char* topic_data, bool retain)
+{
+    char topic[TOPIC_MAXLENGTH];
+    snprintf(topic, TOPIC_MAXLENGTH, "%s/%s/%s/%s", topic_network, topic_location, topic_name, topic_data);
+    mqttClient.publish(topic, data, retain);
     mqttClient.loop();
 }
 

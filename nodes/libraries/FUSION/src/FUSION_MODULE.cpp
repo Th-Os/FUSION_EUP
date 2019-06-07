@@ -82,6 +82,12 @@ void FusionModule::freePacket()
     free(packet);
 }
 
+void FusionModule::sendDataRetain(char data, char* topic_data)
+{
+    char data_pack[1] = {data};
+    mqtt->send(data_pack, topic_data, true);
+}
+
 // wrapper functions for sending data without caring about mqtt topics
 
 void FusionModule::sendData(bool data)
