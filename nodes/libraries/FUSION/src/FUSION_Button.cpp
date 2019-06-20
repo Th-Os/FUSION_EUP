@@ -15,13 +15,12 @@ FusionButton::FusionButton(unsigned int button_pin) : FusionModule()
 void FusionButton::update()
 {
     bool buttonDown = digitalRead(pin);
-
     if(buttonDown == LOW)
     {
         if(wasDown == false)
         {
             wasDown = true;
-            sendDataRetain(true, "button_state");
+            sendDataRetain("true", "button_state");
         }
     }
     else
@@ -29,7 +28,7 @@ void FusionButton::update()
         if(wasDown == true)
         {
             wasDown = false;
-            sendDataRetain(false, "button_state");
+            sendDataRetain("false", "button_state");
         }
     }
 }

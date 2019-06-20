@@ -18,6 +18,9 @@ void FusionMQTT::init()
 {
     // TODO do only once!
     mqttClient = PubSubClient(wifiClient);
+    
+    // WiFi mode was recommended.
+    WiFi.mode(WIFI_STA);
     WiFi.begin(wifi_ssid, wifi_password);
 
     // connect to wifi
@@ -25,32 +28,41 @@ void FusionMQTT::init()
     {
         delay(100);
     }
-
     mqttClient.setServer(mqtt_server, mqtt_port);
-
+    char buf[1000];
+    sprintf(buf,"Set server: %s, %d", mqtt_server, mqtt_port);
+    Serial.println(buf);
     // registers a member function of this instance
     // as a callback for mqtt messages
     // the strange syntax is necessary because of
     // the weird way C++ handles pointers to member functions
     mqttClient.setCallback(std::bind(&FusionMQTT::callback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-
     // member variable maybe?
     char topic[TOPIC_MAXLENGTH];
     snprintf(topic, TOPIC_MAXLENGTH, "%s/%s/%s/#", topic_network, topic_location, topic_name);
-
+    char willTopic[TOPIC_MAXLENGTH];
+    snprintf(willTopic, TOPIC_MAXLENGTH, "%s/%s/%s", topic_network, topic_location, topic_name);
     char will[1000];
     snprintf(will, 1000, "%s disconnected", topic_name);
 
     while (!mqttClient.connected())
     {
-        if (!mqttClient.connect(topic_name, topic, 0, 0, will))
+        // Test for will message
+        if (!mqttClient.connect(topic_name, willTopic, 0, false, will))
         {
-            delay(100);
+            Serial.println(mqttClient.state());
+            delay(5000);
         }
     }
-
+    Serial.println("Connected mqtt");
     // listen to all messages addressed with topic
     mqttClient.subscribe(topic);
+
+    // Test for retain message
+    send("I am alive!", "bla", true);
+
+    // Test for normal message
+    send("I alive!", "blabla");
     Serial.println("initialized");
 }
 
@@ -71,7 +83,7 @@ void FusionMQTT::send(char* data, unsigned int length, char* topic_data)
     snprintf(topic, TOPIC_MAXLENGTH, "%s/%s/%s/%s", topic_network, topic_location, topic_name, topic_data);
     mqttClient.publish(topic, (uint8_t*) data, length, false);
     mqttClient.loop();
-    Serial.println(topic);
+    
 }
 
 void FusionMQTT::send(uint8_t* data, unsigned int length, char* topic_data)
@@ -80,7 +92,6 @@ void FusionMQTT::send(uint8_t* data, unsigned int length, char* topic_data)
     snprintf(topic, TOPIC_MAXLENGTH, "%s/%s/%s/%s", topic_network, topic_location, topic_name, topic_data);
     mqttClient.publish(topic, data, length, false);
     mqttClient.loop();
-    Serial.println(topic);
 }
 
 void FusionMQTT::send(const char* data, char* topic_data)
@@ -91,12 +102,14 @@ void FusionMQTT::send(const char* data, char* topic_data)
     mqttClient.loop();
 }
 
+// Retain Sending Function.
 void FusionMQTT::send(const char* data, char* topic_data, bool retain)
 {
     char topic[TOPIC_MAXLENGTH];
     snprintf(topic, TOPIC_MAXLENGTH, "%s/%s/%s/%s", topic_network, topic_location, topic_name, topic_data);
     mqttClient.publish(topic, data, retain);
     mqttClient.loop();
+    Serial.println(topic);
 }
 
 // call this to make sure the mqtt module sends and receives messages

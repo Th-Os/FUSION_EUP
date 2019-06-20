@@ -27,7 +27,7 @@ class FusionModule
         void createPacket(char* data, int data_length, int type);
         void freePacket();
 
-        void sendDataRetain(char data, char* topic_data);
+        void sendDataRetain(char* data, char* topic_data);
 
         void sendData(char data);
         void sendData(int data);

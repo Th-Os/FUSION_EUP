@@ -82,10 +82,11 @@ void FusionModule::freePacket()
     free(packet);
 }
 
-void FusionModule::sendDataRetain(char data, char* topic_data)
+// Test method for sending a retain message
+
+void FusionModule::sendDataRetain(char* data, char* topic_data)
 {
-    char data_pack[1] = {data};
-    mqtt->send(data_pack, topic_data, true);
+    mqtt->send(data, topic_data, true);
 }
 
 // wrapper functions for sending data without caring about mqtt topics
@@ -181,4 +182,5 @@ void FusionModule::sendData(bool data, char* topic_data)
         data_pack[i] = (char) (data >> (i * sizeof(char) * 8));
     }
     sendData(data_pack, length, topic_data);
+    Serial.println("Sent false data.");
 }
